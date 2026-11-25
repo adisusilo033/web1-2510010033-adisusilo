@@ -71,6 +71,7 @@ const katalog = [
     deskripsi: "Kemeja lengan panjang berbahan sasirangan, cocok untuk acara resmi.",
   },
 ];
+
 // 2. Ambil elemen-elemen HTML yang akan dimanipulasi
 const daftarKatalog = document.querySelector("#daftar-katalog");
 const inputCari = document.querySelector("#cari");
@@ -87,8 +88,9 @@ function formatRupiah(angka) {
     currency: "IDR",
     minimumFractionDigits: 0,
   }).format(angka);
+} // <-- kurung penutup ini yang tadi hilang
 
-  // 5. Membuat elemen <article> untuk satu produk
+// 5. Membuat elemen <article> untuk satu produk
 function buatKartu(produk) {
   const kartu = document.createElement("article");
   kartu.className = "kartu";
@@ -121,19 +123,57 @@ function buatKartu(produk) {
   kartu.append(gambar, isi);
   return kartu;
 }
+
 // 6. Menampilkan sekumpulan produk ke dalam #daftar-katalog
 function tampilkanKatalog(daftarProduk) {
- daftarKatalog.replaceChildren(); // kosongkan isi sebelumnya
- if (daftarProduk.length === 0) {
- const kosong = document.createElement("p");
- kosong.textContent = "Produk tidak ditemukan. Coba kata kunci lain.";
- daftarKatalog.append(kosong);
- }
- daftarProduk.forEach((produk) => {
- daftarKatalog.append(buatKartu(produk));
- });
- infoJumlah.textContent = `Menampilkan ${daftarProduk.length} dari ${katalog.length} produk`;
+  daftarKatalog.replaceChildren(); // kosongkan isi sebelumnya
+
+  if (daftarProduk.length === 0) {
+    const kosong = document.createElement("p");
+    kosong.textContent = "Produk tidak ditemukan. Coba kata kunci lain.";
+    daftarKatalog.append(kosong);
+  }
+
+  daftarProduk.forEach((produk) => {
+    daftarKatalog.append(buatKartu(produk));
+  });
+
+  infoJumlah.textContent = `Menampilkan ${daftarProduk.length} dari ${katalog.length} produk`;
 }
+
+// 7. Menyaring katalog berdasarkan kata kunci DAN kategori aktif
+function saringKatalog() {
+  const kataKunci = inputCari.value.trim().toLowerCase();
+
+  const hasil = katalog.filter((produk) => {
+    const cocokKategori = kategoriAktif === "semua" || produk.kategori === kategoriAktif;
+    const cocokKata =
+      produk.nama.toLowerCase().includes(kataKunci) ||
+      produk.deskripsi.toLowerCase().includes(kataKunci);
+    return cocokKategori && cocokKata;
+  });
+
+  tampilkanKatalog(hasil);
+}
+
+// 8. Event: setiap kali pengguna mengetik di kotak pencarian
+inputCari.addEventListener("input", saringKatalog);
+
+// 9. Event: klik tombol filter kategori
+tombolFilter.forEach((tombol) => {
+ tombol.addEventListener("click", () => {
+ kategoriAktif = tombol.dataset.kategori;
+ // perbarui tampilan tombol: hanya satu yang aktif
+ tombolFilter.forEach((t) => {
+ t.classList.remove("aktif");
+ t.setAttribute("aria-pressed", "false");
+ });
+ tombol.classList.add("aktif");
+ tombol.setAttribute("aria-pressed", "true");
+ saringKatalog();
+ });
+});
+
 // 10. Tampilkan semua produk ketika halaman pertama kali dibuka
 tampilkanKatalog(katalog);
-}
+// (tidak ada "}" lagi di sini: kurung ekstra di akhir berkas lama sudah dihapus)
